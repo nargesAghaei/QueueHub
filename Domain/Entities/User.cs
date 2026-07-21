@@ -78,7 +78,7 @@ public class User : BaseEntity
         UserName userName,
         PasswordHash passwordHash,
         PhoneNumber phoneNumber,
-        Guid organizationId,
+        Guid? organizationId,
         Guid createdByManagerId,
         Email? email = null)
     {

@@ -25,9 +25,11 @@ public class CreateCitizenCommandHandler(IUserRepository userRepository, IUnitOf
             new FirstName(request.FirstName),
             new Lastname(request.LastName),
             new UserName(request.UserName),
-            new PasswordHash(request.Password),
+            new PasswordHash(passwordHash),
             new PhoneNumber(request.PhoneNumber),
-            new Email(request.Email)
+            request.Email is null 
+                ? null 
+                : new Email(request.Email)
             );
         await _userRepository.AddAsync(user, cancellationToken);
         return Result<Guid>.Success("",user.Guid);

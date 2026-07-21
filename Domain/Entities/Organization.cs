@@ -10,8 +10,8 @@ public class Organization : BaseEntity
     public Guid ManagerId { get; private set; }
     public bool IsActive { get; private set; }
 
-    private readonly List<Service> _services = new();
-    public IReadOnlyCollection<Service> Services => _services.AsReadOnly();
+    // private readonly List<Service> _services = new();
+    // public IReadOnlyCollection<Service> Services => _services.AsReadOnly();
 
     private Organization() { } // EF Core
 

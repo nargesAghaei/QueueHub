@@ -23,7 +23,17 @@ public class Role:BaseEntity
             CreatedAt = DateTime.UtcNow
         };
     }
-
+    public static Role Seed(
+        Guid id,
+        string name)
+    {
+        return new Role
+        {
+            Guid = id,
+            Name = name,
+            CreatedAt = DateTime.UtcNow
+        };
+    }
     public void Rename(string newName)
     {
         if (string.IsNullOrWhiteSpace(newName))

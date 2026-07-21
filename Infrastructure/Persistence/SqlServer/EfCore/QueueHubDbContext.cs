@@ -6,4 +6,13 @@ namespace Infrastructure.Persistence.SqlServer;
 public class QueueHubDbContext(DbContextOptions<QueueHubDbContext> options) : DbContext(options)
 {
     public DbSet<User> Users { get; set; }
+    public DbSet<Organization> Organizations { get; set; }
+    public DbSet<Role> Roles { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(QueueHubDbContext).Assembly);
+        base.OnModelCreating(modelBuilder);
+    }
 }

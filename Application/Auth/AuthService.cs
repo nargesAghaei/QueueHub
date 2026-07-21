@@ -1,4 +1,5 @@
 ﻿using Application.Auth.DTOs;
+using Application.Interfaces;
 using Application.Users.Commands.CreateUser;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -7,21 +8,29 @@ using Shared;
 
 namespace Application.Auth;
 
-public class AuthService(IUserRepository repo) : IAuthService
+public class AuthService(IUserRepository repo,IJwtService jwtService) : IAuthService
 {
-    public async Task<Result<Guid?>> Login(LoginDto dto,CancellationToken cancellationToken)
+    private readonly IJwtService _jwtService = jwtService;
+    public async Task<Result<LoginResultDto>> Login(LoginDto dto,CancellationToken cancellationToken)
     {
         var user = await repo.GetByUserNameAsync(dto.UserName,cancellationToken);
 
         if (user == null)
-            return Result<Guid?>.Failed("کاربری با این نام کاربری یافت نشد.");
+            return Result<LoginResultDto>.Failed("کاربری با این نام کاربری یافت نشد.");
 
         var isValid = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
 
         if (!isValid)
-            return Result<Guid?>.Failed("رمز عبور وارد شده نادرست است.");
+            return Result<LoginResultDto>.Failed("رمز عبور وارد شده نادرست است.");
+        
+        var token = _jwtService.GenerateToken(user);
 
-        return Result<Guid?>.Success("",user.Guid);
+        var result = new LoginResultDto
+        {
+            Token = token,
+            UserId = user.Guid
+        };
+        return Result<LoginResultDto>.Success("",result);
     }
 
     public async Task<bool> IsValidGuid(Guid guid,CancellationToken cancellationToken)

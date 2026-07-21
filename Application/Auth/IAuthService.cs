@@ -6,6 +6,6 @@ namespace Application.Auth;
 
 public interface IAuthService
 {
-    Task<Result<Guid?>> Login(LoginDto dto, CancellationToken cancellationToken);
+    Task<Result<LoginResultDto>> Login(LoginDto dto, CancellationToken cancellationToken);
     Task<bool> IsValidGuid(Guid guid,CancellationToken cancellationToken);
 }

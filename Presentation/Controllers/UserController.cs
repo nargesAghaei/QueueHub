@@ -5,6 +5,7 @@ using Application.Users.Commands.UpdateUser;
 using Application.Users.Queries.GetAllUsers;
 using Application.Users.Queries.GetUserById;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QueueHub.Filters;
 
@@ -12,7 +13,7 @@ namespace QueueHub.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[ServiceFilter(typeof(AuthorizeActionFilter))]
+[Authorize]
 public class UserController(IMediator mediator) : ControllerBase
 {
     [HttpGet("{id:guid}")]
