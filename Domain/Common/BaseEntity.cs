@@ -1,10 +1,11 @@
 ﻿namespace Domain.Entities;
 
-public abstract class BaseEntity
+public abstract class BaseEntity<TId>
+    where TId : notnull
 {
-    public Guid Guid { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public Guid CreatedBy { get; set; }
-    public Guid? UpdatedBy { get; set; }
+    public TId Id { get; protected set; } = default!;
+    public DateTime CreatedAt { get; protected set; }
+    public DateTime? UpdatedAt { get; protected set; }
+    public TId? CreatedBy { get; protected set; }
+    public TId? UpdatedBy { get; protected set; }
 }

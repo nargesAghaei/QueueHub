@@ -2,7 +2,7 @@
 
 namespace Domain.Entities;
 
-public class Organization : BaseEntity
+public class Organization : BaseEntity<Guid>
 {
     public string Name { get; private set; } = null!;
     public string? Description { get; private set; }
@@ -62,23 +62,23 @@ public class Organization : BaseEntity
     }
 
     // Services belong to the Organization - managed through it (Aggregate rule)
-    public Service AddService(string serviceName, string? description = null)
-    {
-        if (_services.Any(s => s.Name.Equals(serviceName, StringComparison.OrdinalIgnoreCase)))
-            throw new DomainException("A service with this name already exists in this organization.");
-
-        var service = Service.Create(serviceName, Id, description);
-        _services.Add(service);
-        return service;
-    }
-
-    public void RemoveService(Guid serviceId)
-    {
-        var service = _services.FirstOrDefault(s => s.Id == serviceId);
-
-        if (service is null)
-            throw new DomainException("Service not found in this organization.");
-
-        _services.Remove(service);
-    }
+    // public Service AddService(string serviceName, string? description = null)
+    // {
+    //     if (_services.Any(s => s.Name.Equals(serviceName, StringComparison.OrdinalIgnoreCase)))
+    //         throw new DomainException("A service with this name already exists in this organization.");
+    //
+    //     var service = Service.Create(serviceName, Id, description);
+    //     _services.Add(service);
+    //     return service;
+    // }
+    //
+    // public void RemoveService(Guid serviceId)
+    // {
+    //     var service = _services.FirstOrDefault(s => s.Id == serviceId);
+    //
+    //     if (service is null)
+    //         throw new DomainException("Service not found in this organization.");
+    //
+    //     _services.Remove(service);
+    // }
 }

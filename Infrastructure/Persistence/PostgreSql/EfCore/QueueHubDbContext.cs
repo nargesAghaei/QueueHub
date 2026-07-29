@@ -1,7 +1,7 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Persistence.SqlServer;
+namespace Infrastructure.Persistence.PostgreSql.EfCore;
 
 public class QueueHubDbContext(DbContextOptions<QueueHubDbContext> options) : DbContext(options)
 {

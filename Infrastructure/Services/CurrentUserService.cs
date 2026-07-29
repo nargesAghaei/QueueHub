@@ -19,7 +19,7 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
         }
     }
 
-    public Guid UserId
+    public Guid Id
     {
         get
         {

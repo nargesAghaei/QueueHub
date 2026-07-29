@@ -10,7 +10,7 @@ public record Email(string Value):BaseRecordValueObject
     protected override void Validate()
     {
         if (string.IsNullOrWhiteSpace(Value))
-            throw new DomainException("ایمیل اجباری است.");
+            return;
         
         if (Value.Length > 254)
             throw new DomainException("طول ایمیل بیشتر از حد مجاز است.");

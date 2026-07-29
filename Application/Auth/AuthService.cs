@@ -1,6 +1,7 @@
 ﻿using Application.Auth.DTOs;
 using Application.Interfaces;
 using Application.Users.Commands.CreateUser;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Interfaces;
 using Domain.ValueObjects.UserValueObjects;
@@ -23,12 +24,25 @@ public class AuthService(IUserRepository repo,IJwtService jwtService) : IAuthSer
         if (!isValid)
             return Result<LoginResultDto>.Failed("رمز عبور وارد شده نادرست است.");
         
-        var token = _jwtService.GenerateToken(user);
+        var roles = user.UserRoles
+            .Select(x => x.Role.Name)
+            .ToList();
+        
+        string activeRole;
+
+        if (roles.Contains(RoleNames.Manager))
+            activeRole = RoleNames.Manager;
+        else if (roles.Contains(RoleNames.Staff))
+            activeRole = RoleNames.Staff;
+        else
+            activeRole = RoleNames.Citizen;
+        
+        var token = _jwtService.GenerateToken(user,activeRole);
 
         var result = new LoginResultDto
         {
             Token = token,
-            UserId = user.Guid
+            UserId = user.Id
         };
         return Result<LoginResultDto>.Success("",result);
     }

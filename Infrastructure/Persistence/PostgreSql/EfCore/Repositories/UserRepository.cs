@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces;
+using Infrastructure.Persistence.PostgreSql.EfCore;
 using Infrastructure.Persistence.SqlServer;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,20 +16,15 @@ public class UserRepository(QueueHubDbContext dbContext)
 
     public async Task<bool> ExistsById(Guid id, CancellationToken cancellationToken)
     {
-        return await DbSet.AnyAsync(u => u.Guid == id, cancellationToken);
+        return await DbSet.AnyAsync(u => u.Id == id, cancellationToken);
     }
-
-    public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken)
-    {
-        return await DbSet.ToListAsync(cancellationToken);
-    }
-
+    
     public async Task<bool> ExistsByUserNameAsync(string userName, CancellationToken cancellationToken,
         Guid? exceptUserId = null)
     {
         return await DbSet.AnyAsync(u =>
                 u.UserName.Value == userName &&
-                (exceptUserId == null || u.Guid != exceptUserId),
+                (exceptUserId == null || u.Id != exceptUserId),
             cancellationToken);
     }
 
@@ -37,12 +33,12 @@ public class UserRepository(QueueHubDbContext dbContext)
         return await DbSet
             .Include(u => u.UserRoles)
             .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Guid == id, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
     
     public async Task<bool> SoftDeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var user = await DbSet.FirstOrDefaultAsync(u => u.Guid == id, cancellationToken);
+        var user = await DbSet.FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
         if (user is null)
             return false;

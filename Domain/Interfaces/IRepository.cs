@@ -5,5 +5,6 @@ public interface IRepository<T> where T : class
     Task AddAsync(T entity, CancellationToken cancellationToken);
     void Delete(T entity);
     void Update(T entity);
+    Task<IReadOnlyList<T>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 }

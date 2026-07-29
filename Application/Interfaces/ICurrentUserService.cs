@@ -3,7 +3,7 @@
 public interface ICurrentUserService
 {
     string Name { get; }
-    Guid UserId { get; }
+    Guid Id { get; }
     Guid? OrganizationId { get; }
     string? Role { get; }
 }

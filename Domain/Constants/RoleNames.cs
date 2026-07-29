@@ -1,6 +1,6 @@
 ﻿namespace Domain.Constants;
 
-public class RoleNames
+public static class RoleNames
 {
     public const string Citizen = "Citizen";
     public const string Manager = "Manager";

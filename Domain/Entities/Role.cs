@@ -2,12 +2,14 @@
 
 namespace Domain.Entities;
 
-public class Role:BaseEntity
+public class Role:BaseEntity<int>
 {
     public string Name { get; private set; } = null!;
 
     private readonly List<UserRole> _userRoles = new();
     public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
+    private static readonly DateTime SeedDate = 
+        new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     private Role() { }
 
@@ -18,20 +20,19 @@ public class Role:BaseEntity
 
         return new Role
         {
-            Guid = Guid.NewGuid(),
             Name = name.Trim(),
             CreatedAt = DateTime.UtcNow
         };
     }
     public static Role Seed(
-        Guid id,
+        int id,
         string name)
     {
         return new Role
         {
-            Guid = id,
+            Id = id,
             Name = name,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt =SeedDate
         };
     }
     public void Rename(string newName)

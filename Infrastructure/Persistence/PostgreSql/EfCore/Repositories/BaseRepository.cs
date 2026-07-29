@@ -1,19 +1,15 @@
 ﻿using Domain.Interfaces;
+using Infrastructure.Persistence.PostgreSql.EfCore;
 using Infrastructure.Persistence.SqlServer;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure;
 
-public class BaseRepository<T>: IRepository<T> where T : class
+public class BaseRepository<T>(QueueHubDbContext dbContext) : IRepository<T>
+    where T : class
 {
-    protected readonly QueueHubDbContext DbContext;
-    protected readonly DbSet<T> DbSet;
-
-    public BaseRepository(QueueHubDbContext dbContext)
-    {
-        DbContext = dbContext;
-        DbSet = dbContext.Set<T>();
-    }
+    protected readonly QueueHubDbContext DbContext = dbContext;
+    protected readonly DbSet<T> DbSet = dbContext.Set<T>();
 
     public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => await DbSet.FindAsync([id], cancellationToken);
@@ -30,6 +26,4 @@ public class BaseRepository<T>: IRepository<T> where T : class
     public virtual void Delete(T entity)
         => DbSet.Remove(entity);
 
-    public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => DbContext.SaveChangesAsync(cancellationToken);
 }

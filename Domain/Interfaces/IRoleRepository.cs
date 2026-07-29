@@ -9,6 +9,6 @@ public interface IRoleRepository
         CancellationToken cancellationToken);
 
     Task<Role?> GetByIdAsync(
-        Guid roleId,
+        int roleId,
         CancellationToken cancellationToken);
 }

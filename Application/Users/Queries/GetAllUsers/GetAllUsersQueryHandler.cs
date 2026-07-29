@@ -15,7 +15,7 @@ public class GetAllUsersQueryHandler(IUserRepository userRepository)
         CancellationToken cancellationToken)
     {
         var list = await _userRepository.GetAllAsync(cancellationToken);
-        if (list == null)
+        if (list is null)
             return Result<List<UserListDto>>.Failed("لیست کاربران یافت نشد.");
         return Result<List<UserListDto>>.Success("", list.ToUserListDto());
     }

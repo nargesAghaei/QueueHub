@@ -13,7 +13,7 @@ public class JwtService(IConfiguration configuration) : IJwtService
     
     private readonly string _secret = configuration["Jwt:SecretKey"]!;
 
-    public string GenerateToken(User user)
+    public string GenerateToken(User user,string activeRole)
     {
         var claims = new[]
         {
@@ -24,7 +24,7 @@ public class JwtService(IConfiguration configuration) : IJwtService
             
             new Claim(
                 "UserId",
-                user.Guid.ToString()),
+                user.Id.ToString()),
 
 
             new Claim(
@@ -34,7 +34,7 @@ public class JwtService(IConfiguration configuration) : IJwtService
 
             new Claim(
                 ClaimTypes.Role,
-                user.UserRoles.ToString())
+                activeRole)
         };
         
         var key =
@@ -50,7 +50,7 @@ public class JwtService(IConfiguration configuration) : IJwtService
         var token =
             new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddHours(1),
+                expires: DateTime.Now.AddDays(1),
                 signingCredentials: credentials);
 
 

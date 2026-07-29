@@ -1,9 +1,10 @@
 ﻿using Domain.Exceptions;
+using Domain.Interfaces;
 using Domain.ValueObjects.UserValueObjects;
 
 namespace Domain.Entities;
 
-public class User : BaseEntity
+public class User : BaseEntity<Guid>,ISoftDeletable
 {
     public FirstName FirstName { get; private set; } = null!;
     public Lastname LastName { get; private set; } = null!;
@@ -14,11 +15,11 @@ public class User : BaseEntity
     public string? ProfileImageUrl { get; private set; }
     public DateTime? LastLoginAt { get; private set; }
     public bool IsDeleted { get; private set; }
-
-    public Guid? OrganizationId { get; private set; }
-
+    public int? ActiveRoleId { get; private set; }
+    public Role? ActiveRole { get; private set; }
     private readonly List<UserRole> _userRoles = new();
     public IReadOnlyCollection<UserRole> UserRoles => _userRoles.AsReadOnly();
+    public Guid? OrganizationId { get; private set; }
 
     private User() { }
 
@@ -32,7 +33,7 @@ public class User : BaseEntity
     {
         return new User
         {
-            Guid = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
             FirstName = firstName,
             LastName = lastName,
             UserName = userName,
@@ -59,7 +60,7 @@ public class User : BaseEntity
 
         return new User
         {
-            Guid = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
             FirstName = firstName,
             LastName = lastName,
             UserName = userName,
@@ -87,7 +88,7 @@ public class User : BaseEntity
 
         return new User
         {
-            Guid = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
             FirstName = firstName,
             LastName = lastName,
             UserName = userName,
@@ -100,19 +101,33 @@ public class User : BaseEntity
             CreatedBy = createdByManagerId
         };
     }
+
+    public void UpdateProfile(
+        FirstName firstName,
+        Lastname lastName,
+        PhoneNumber phoneNumber,
+        Email email,
+        string? profileImageUrl)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        PhoneNumber= phoneNumber;
+        Email = email;
+        ProfileImageUrl = profileImageUrl;
+    }
     
-    public void ChangePassword(PasswordHash newPasswordHash)
+    public void UpdatePassword(PasswordHash newPasswordHash)
     {
         PasswordHash = newPasswordHash;
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateProfileImage(string? imageUrl)
+    public void UpdateUserName(UserName newUserName)
     {
-        ProfileImageUrl = imageUrl;
+        UserName = newUserName;
         UpdatedAt = DateTime.UtcNow;
     }
-
+    
     public void RecordLogin()
     {
         LastLoginAt = DateTime.UtcNow;
@@ -122,17 +137,30 @@ public class User : BaseEntity
     {
         IsDeleted = true;
         UpdatedAt = DateTime.UtcNow;
+        foreach (var userRole in _userRoles)
+        {
+            userRole.Delete();
+        }
     }
 
     public void AssignRole(Role role)
     {
-        if (_userRoles.Any(ur => ur.RoleId == role.Guid))
+        if (_userRoles.Any(ur => ur.RoleId == role.Id))
             throw new DomainException("User already has this role.");
 
-        _userRoles.Add(new UserRole(Guid, role.Guid));
+        _userRoles.Add(new UserRole(Id, role.Id));
+        ActiveRoleId = role.Id;
     }
 
-    public void RemoveRole(Guid roleId)
+    public void SwitchRole(int roleId)
+    {
+        if (_userRoles.Any(ur => ur.RoleId == roleId))
+            throw new InvalidOperationException("User does not have this role");
+
+        ActiveRoleId = roleId;
+    }
+    
+    public void RemoveRole(int roleId)
     {
         var userRole = _userRoles.FirstOrDefault(ur => ur.RoleId == roleId);
 

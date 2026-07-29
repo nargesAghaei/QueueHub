@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces;
+using Infrastructure.Persistence.PostgreSql.EfCore;
 using Infrastructure.Persistence.SqlServer;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,12 +20,12 @@ public class RoleRepository(QueueHubDbContext context) : IRoleRepository
 
 
     public async Task<Role?> GetByIdAsync(
-        Guid roleId,
+        int roleId,
         CancellationToken cancellationToken)
     {
         return await context.Roles
             .FirstOrDefaultAsync(
-                x => x.Guid == roleId,
+                x => x.Id == roleId,
                 cancellationToken);
     }
 }
