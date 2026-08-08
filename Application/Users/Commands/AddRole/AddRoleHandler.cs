@@ -7,6 +7,6 @@ public class AddRoleHandler:IRequestHandler<AddRoleCommand,Result>
 {
     public Task<Result> Handle(AddRoleCommand request, CancellationToken cancellationToken)
     {
-        
+        throw new NotImplementedException();
     }
 }

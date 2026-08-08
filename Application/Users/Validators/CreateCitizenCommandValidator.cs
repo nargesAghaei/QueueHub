@@ -11,21 +11,21 @@ public class CreateCitizenCommandValidator:AbstractValidator<CreateCitizenComman
         RuleFor(x => x.FirstName)
             .NotEmpty()
             .NotNull()
-            .WithMessage("")
+            .WithMessage("نام اجباری است.")
             .MinimumLength(UserConstants.MinNameLength)
-            .WithMessage("")
+            .WithMessage("حداقل طول نام 3 کاراکتر است.")
             .MaximumLength(UserConstants.MaxFirstNameLength)
-            .WithMessage("");
+            .WithMessage("حداکثر طول نام 20 کاراکتر است.");
 
         
         RuleFor(x => x.LastName)
             .MaximumLength(UserConstants.MaxLastNameLength)
-            .WithMessage("")
+            .WithMessage("حداکثر طول نام خانوادگی 30 کاراکتر است.")
             .MinimumLength(UserConstants.MinLastNameLength)
-            .WithMessage("")
+            .WithMessage("حداقل طول نام خانوادگی 3 کاراکتر است.")
             .NotEmpty()
             .NotNull()
-            .WithMessage("");
+            .WithMessage("نام خانوادگی اجباری است.");
 
         
         RuleFor(x => x.PhoneNumber)

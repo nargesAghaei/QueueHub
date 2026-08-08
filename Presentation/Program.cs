@@ -17,123 +17,33 @@ using Infrastructure.Persistence.PostgreSql.EfCore;
 using Infrastructure.Services;
 using MediatR;
 using Microsoft.OpenApi;
+using QueueHub;
 using QueueHub.Application;
 using QueueHub.Application.Common.Behaviors;
+using QueueHub.ErrorHandling;
 using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Serilog
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File(
-        "logs/log-.txt",
-        rollingInterval: RollingInterval.Day)
-    .CreateLogger();
-
+// Logging
 builder.Host.UseSerilog();
-
-
-// Database
-builder.Services.AddDbContext<QueueHubDbContext>(option =>
-    option.UseNpgsql(
-        builder.Configuration.GetConnectionString("Default")));
-
 
 // Dependency Injection
 builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-builder.Services.AddScoped<IJwtService, JwtService>();
-
-builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
-
-
-// MediatR
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(
-        typeof(CreateCitizenCommand).Assembly);
-});
-
-builder.Services
-    .AddValidatorsFromAssembly(
-        typeof(AssemblyReference).Assembly);
-
-builder.Services.AddTransient(
-    typeof(IPipelineBehavior<,>),
-    typeof(ValidationBehavior<,>)
-);
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 
 // Authentication
 var secretKey = builder.Configuration["Jwt:SecretKey"];
 
-builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme =
-            JwtBearerDefaults.AuthenticationScheme;
-
-        options.DefaultChallengeScheme =
-            JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters =
-            new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-
-                IssuerSigningKey =
-                    new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(secretKey!)),
-
-                ValidateIssuer = false,
-
-                ValidateAudience = false,
-
-                ValidateLifetime = true
-            };
-    });
-
+//Exception Handling
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // MVC + Swagger
 builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.ParameterLocation.Header,
-        Description = "Enter JWT token like: Bearer {token}"
-    });
-
-    options.AddSecurityRequirement(document =>
-    {
-        return new Microsoft.OpenApi.OpenApiSecurityRequirement
-        {
-            {
-                new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document),
-                new List<string>()
-            }
-        };
-    });
-});
-
+builder.Services.AddSwaggerWithJwt();
 
 // Build
 var app = builder.Build();
@@ -146,7 +56,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<ExceptionMiddleware>();
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
