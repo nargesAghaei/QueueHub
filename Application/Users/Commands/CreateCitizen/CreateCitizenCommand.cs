@@ -1,9 +1,10 @@
-﻿using MediatR;
+﻿using Application.Users.DTOs;
+using MediatR;
 using Shared;
 
 namespace Application.Users.Commands.CreateUser;
 
-public class CreateCitizenCommand:IRequest<Result<Guid>>
+public class CreateCitizenCommand:IRequest<Result<AuthResult>>
 {
     public required string FirstName { get; set; }
     public required string LastName { get; set; }

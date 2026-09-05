@@ -1,8 +1,11 @@
-﻿using Domain.Entities;
+﻿using System.Security.Claims;
+using Domain.Entities;
 
 namespace Application.Interfaces;
 
 public interface IJwtService
 {
-    string GenerateToken(User user,string activeRole);
+    string GenerateAccessToken(User user);
+    string GenerateRefreshToken();
+    ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
 }

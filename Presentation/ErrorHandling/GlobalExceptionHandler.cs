@@ -9,13 +9,10 @@ namespace QueueHub.ErrorHandling;
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger):IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
-    {
-        var exceptionLogRepository = httpContext.RequestServices
-            .GetRequiredService<IExceptionLogRepository>();
-        
+    { 
         var statusCode = ResolveStatusCode(exception);
 
-        await LogExceptionAsync(httpContext, exception, statusCode, exceptionLogRepository);
+        await LogExceptionAsync(httpContext, exception, statusCode);
         await WriteProblemAsync(httpContext, statusCode, ResolveDetail(exception, statusCode), cancellationToken);
 
         return true;
@@ -23,6 +20,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger):IExc
 
     private static HttpStatusCode ResolveStatusCode(Exception exception) => exception switch
     {
+        FluentValidation.ValidationException => HttpStatusCode.BadRequest,
         DomainException => HttpStatusCode.BadRequest,
         ArgumentException => HttpStatusCode.BadRequest,
         UnauthorizedAccessException => HttpStatusCode.Unauthorized,
@@ -37,13 +35,15 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger):IExc
     private async Task LogExceptionAsync(
         HttpContext httpContext,
         Exception exception,
-        HttpStatusCode statusCode,
-        IExceptionLogRepository exceptionLogRepository)
+        HttpStatusCode statusCode)
     {
         logger.LogError(exception, exception.Message);
 
         try
         {
+            var exceptionLogRepository = httpContext.RequestServices
+                .GetRequiredService<IExceptionLogWriteRepository>();
+
             var log = ExceptionLog.CreateByException(
                 exception,
                 (int)statusCode,

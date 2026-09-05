@@ -9,31 +9,33 @@ using Shared;
 
 namespace Application.Users.Commands.SwitchRole;
 
-public class SwitchRoleHandler(IUserRepository userRepository,
+public class SwitchRoleHandler(IUserReadRepository userReadRepository,
     IUnitOfWork unitOfWork,
+    IJwtService jwtService,
     ILogger<SoftDeleteUserCommandHandler> logger,
     ICurrentUserService currentUserService)
-    :IRequestHandler<SwitchRoleCommand,Result>
+    :IRequestHandler<SwitchRoleCommand,Result<string>>
 {
-    private readonly IUserRepository _userRepository=userRepository;
-    private readonly IUnitOfWork _unitOfWork=unitOfWork;
-    private readonly ILogger<SoftDeleteUserCommandHandler> _logger = logger;
-    private readonly ICurrentUserService _currentUser=currentUserService;
-    
-    public async Task<Result> Handle(SwitchRoleCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(SwitchRoleCommand request, CancellationToken cancellationToken)
     {
-        var user=await _userRepository.GetByIdWithRolesAsync(_currentUser.Id,cancellationToken);
-        var role=user.UserRoles.Where(r=>r.RoleId==request.RoleId).FirstOrDefault();
+        var user=await userReadRepository.GetByIdWithRolesAsync(currentUserService.Id,cancellationToken);
+        if (user is null)
+        {
+            logger.LogError("User not found");
+            return Result<string>.Failed("کاربر یافت نشد.");
+        }
+        var role=user.UserRoles.FirstOrDefault(r => r.RoleId==request.RoleId);
         if (role is null)
         {
-            _logger.LogError("User does not have this role");
-            return Result.Failed("نقش مورد نظر برای این کاربر یافت نشد.");
+            logger.LogError("User does not have this role");
+            return Result<string>.Failed("نقش مورد نظر برای این کاربر یافت نشد.");
         }
         
-        _logger.LogInformation("Start switching role to {RoleId}..",role.Role.Name);
+        logger.LogInformation("Start switching role to {RoleId}..",role.Role.Name);
         user.SwitchRole(request.RoleId);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Role switched to {Role}",role.Role.Name);
-        return Result.Success();
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        var newToken = jwtService.GenerateAccessToken(user);
+        logger.LogInformation("Role switched to {Role}",role.Role.Name);
+        return Result<string>.Success("نقش شما تغییر کرد",newToken);
     }
 }

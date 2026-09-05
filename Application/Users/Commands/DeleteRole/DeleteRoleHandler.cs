@@ -7,29 +7,28 @@ using Shared;
 
 namespace Application.Users.Commands.DeleteRole;
 
-public class DeleteRoleHandler(IUserRepository userRepository,
+public class DeleteRoleHandler(IUserReadRepository userReadRepository,
     IUnitOfWork unitOfWork,
     ILogger<DeleteRoleHandler>  logger,
+    IJwtService jwtService,
     ICurrentUserService currentUserService)
-    :IRequestHandler<DeleteRoleCommand,Result>
+    :IRequestHandler<DeleteRoleCommand,Result<string>>
 {
-    private readonly ICurrentUserService _currentUserService=currentUserService;
-    private readonly ILogger<DeleteRoleHandler> _logger=logger;
-    private readonly IUserRepository _userRepository=userRepository;
-    private  readonly IUnitOfWork _unitOfWork=unitOfWork;
-    
-    public async Task<Result> Handle(DeleteRoleCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(
+        DeleteRoleCommand request,
+        CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdWithRolesAsync(_currentUserService.Id, cancellationToken);
+        var user = await userReadRepository.GetByIdWithRolesAsync(currentUserService.Id, cancellationToken);
         if (user is null)
         {
-            _logger.LogError("User not found");
-            return Result.Failed("حساب شما پیدا نشد.");
+            logger.LogError("User not found");
+            return Result<string>.Failed("حساب شما پیدا نشد.");
         }
-        _logger.LogInformation("Start Deleting role..");
+        logger.LogInformation("Start Deleting role..");
         user.RemoveRole(request.RoleId);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Role deletion was successful.");
-        return Result.Success("نقش مورد نظر حذف شد.");
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Role deletion was successful.");
+        var accessToken=jwtService.GenerateAccessToken(user);
+        return Result<string>.Success("نقش مورد نظر حذف شد.", accessToken);
     }
 }

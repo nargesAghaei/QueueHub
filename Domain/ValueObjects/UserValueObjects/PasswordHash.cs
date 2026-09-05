@@ -2,7 +2,7 @@
 
 namespace Domain.ValueObjects.UserValueObjects;
 
-public record PasswordHash(string Value):BaseRecordValueObject
+public record PasswordHash(string Value) : BaseRecordValueObject(Value)
 {
     protected override void Validate()
     {

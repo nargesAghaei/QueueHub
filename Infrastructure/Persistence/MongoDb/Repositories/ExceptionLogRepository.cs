@@ -4,12 +4,9 @@ using MongoDB.Driver;
 
 namespace Infrastructure.Persistence.MongoDb.Repositories;
 
-public class ExceptionLogRepository(MongoContext context):IExceptionLogRepository
+public class ExceptionLogReadRepository(MongoContext context):IExceptionLogReadRepository
 {
     private IMongoCollection<ExceptionLog> Collection => context.ExceptionLogs;
-
-    public Task AddAsync(ExceptionLog log, CancellationToken cancellationToken = default)
-        => Collection.InsertOneAsync(log, options: null, cancellationToken);
 
     public async Task<ExceptionLog?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {

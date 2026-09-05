@@ -8,35 +8,33 @@ using Shared;
 
 namespace Application.Users.Commands.UpdatePassword;
 
-public class UpdatePasswordCommandHandler(IUserRepository userRepository,
+public class UpdatePasswordCommandHandler(IUserWriteRepository userWriteRepository,
     IUnitOfWork unitOfWork,
+    IRefreshTokenWriteRepository refreshTokenWriteRepository,
+    IPasswordHasher passwordHasher,
     ICurrentUserService currentUserService,
     ILogger<UpdatePasswordCommandHandler> logger)
     :IRequestHandler<UpdatePasswordCommand,Result>
 {
-    private readonly ICurrentUserService _currentUser=currentUserService;
-    private readonly IUserRepository _userRepository=userRepository;
-    private readonly IUnitOfWork _unitOfWork=unitOfWork;
-    private readonly ILogger<UpdatePasswordCommandHandler> _logger=logger;
-    
     public async Task<Result> Handle(UpdatePasswordCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Updating password");
+        logger.LogInformation("Updating password");
         if (request.Password != request.RePassword)
         {
-            _logger.LogError("Passwords do not match");
+            logger.LogError("Passwords do not match");
             return Result.Failed("پسورد با تکرار آن مشابه نیست.");
         }
-        var user =await _userRepository.GetByIdAsync(_currentUser.Id, cancellationToken);
+        var user =await userWriteRepository.GetByIdAsync(currentUserService.Id, cancellationToken);
         if (user is null)
         {
-            _logger.LogError("Updating user password failed. user with this Id:{UserId} not found.",_currentUser.Id);
+            logger.LogError("Updating user password failed. user with this Id:{UserId} not found.",currentUserService.Id);
             return Result.Failed("کاربر مورد نظر یافت نشد.");
         }
-        var hashPass=BCrypt.Net.BCrypt.HashPassword(request.Password);
+        var hashPass=passwordHasher.Hash(request.Password);
         user.UpdatePassword(new PasswordHash(hashPass));
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("User password with UserName:{UserName} successfully Updated", user.UserName);
+        await refreshTokenWriteRepository.RevokeAllByUserIdAsync(user.Id, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("User password with UserName:{UserName} successfully Updated", user.UserName);
         return Result.Success("پسورد آپدیت شد.");
     }
 }

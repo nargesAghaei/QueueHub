@@ -2,8 +2,11 @@
 
 public abstract record BaseRecordValueObject
 {
-    protected BaseRecordValueObject()
+    public string Value { get; }
+
+    protected BaseRecordValueObject(string value)
     {
+        Value = value;
         Validate();
     }
 

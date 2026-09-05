@@ -8,28 +8,26 @@ using Shared;
 
 namespace Application.Users.Commands.UpdateUserName;
 
-public class UpdateUserNameCommandHandler(IUserRepository userRepository,
+public class UpdateUserNameCommandHandler(IUserWriteRepository userWriteRepository,
     IUnitOfWork unitOfWork,
+    IRefreshTokenWriteRepository refreshTokenWriteRepository,
     ICurrentUserService currentUserService,
     ILogger<UpdateUserNameCommandHandler> logger)
     :IRequestHandler<UpdateUserNameCommand,Result>
 {
-    private readonly IUserRepository _userRepository=userRepository;
-    private readonly ICurrentUserService _currentUser=currentUserService;
-    private  readonly IUnitOfWork _unitOfWork=unitOfWork;
-    private readonly ILogger<UpdateUserNameCommandHandler> _logger=logger;
     public async Task<Result> Handle(UpdateUserNameCommand request, CancellationToken cancellationToken)
     {       
-        _logger.LogInformation("Updating UserName..");
-        var user =await _userRepository.GetByIdAsync(_currentUser.Id, cancellationToken);
+        logger.LogInformation("Updating UserName..");
+        var user =await userWriteRepository.GetByIdAsync(currentUserService.Id, cancellationToken);
         if (user is null)
         {
-            _logger.LogError("Updating UserName failed. user with this Id:{Id} not found.",_currentUser.Id);
+            logger.LogError("Updating UserName failed. user with this Id:{Id} not found.",currentUserService.Id);
             return Result.Failed("کاربر مورد نظر یافت نشد.");
         }
         user.UpdateUserName(new UserName(request.UserName));
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("UserName successfully updated.");
+        await refreshTokenWriteRepository.RevokeAllByUserIdAsync(user.Id, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("UserName successfully updated.");
         return Result.Success("نام کاربری آپدیت شد.");
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Domain.ValueObjects.UserValueObjects;
 
-public record PhoneNumber(string Value):BaseRecordValueObject
+public record PhoneNumber(string Value) : BaseRecordValueObject(Value)
 {
     protected override void Validate()
     {

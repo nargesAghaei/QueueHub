@@ -3,7 +3,7 @@ using Domain.Exceptions;
 
 namespace Domain.ValueObjects.UserValueObjects;
 
-public record UserName(string Value):BaseRecordValueObject
+public record UserName(string Value) : BaseRecordValueObject(Value)
 {
     private static readonly Regex Pattern =
         new(@"^[a-zA-Z0-9_.]+$", RegexOptions.Compiled);

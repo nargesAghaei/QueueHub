@@ -6,15 +6,13 @@ using Shared;
 
 namespace Application.Users.Queries.GetAllUsers;
 
-public class GetAllUsersQueryHandler(IUserRepository userRepository)
+public class GetAllUsersQueryHandler(IUserReadRepository userReadRepository)
     : IRequestHandler<GetAllUsersQuery, Result<List<UserListDto>>>
 {
-    private readonly IUserRepository _userRepository = userRepository;
-
     public async Task<Result<List<UserListDto>>> Handle(GetAllUsersQuery request,
         CancellationToken cancellationToken)
     {
-        var list = await _userRepository.GetAllAsync(cancellationToken);
+        var list = await userReadRepository.GetAllAsync(cancellationToken);
         if (list is null)
             return Result<List<UserListDto>>.Failed("لیست کاربران یافت نشد.");
         return Result<List<UserListDto>>.Success("", list.ToUserListDto());

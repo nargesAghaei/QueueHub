@@ -7,28 +7,27 @@ using Shared;
 
 namespace Application.Users.Commands.SoftDeleteUser;
 
-public class SoftDeleteUserCommandHandler(IUserRepository userRepository,
-        IUnitOfWork unitOfWork,
-        ILogger<SoftDeleteUserCommandHandler> logger)
+public class SoftDeleteUserCommandHandler(IUserWriteRepository userWriteRepository,
+    IUnitOfWork unitOfWork,
+    IRefreshTokenWriteRepository refreshTokenWriteRepository,
+    ILogger<SoftDeleteUserCommandHandler> logger)
     :IRequestHandler<SoftDeleteUserCommand,Result>
 {
-    private readonly IUserRepository _userRepository = userRepository;
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly ILogger<SoftDeleteUserCommandHandler> _logger= logger;
     public async Task<Result> Handle(SoftDeleteUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(request.Guid, cancellationToken);
-        _logger.LogInformation("Deleting user with UserName:{UserName}", user.UserName);
+        var user = await userWriteRepository.GetByIdAsync(request.Guid, cancellationToken);
 
         if (user is null)
         {
-            _logger.LogError("Deleting user failed. user with this Id:{Id} not found.",user.Id);
+            logger.LogError("Deleting user failed. user with this Id:{Id} not found.", request.Guid);
             return Result.Failed("User not found");
         }
 
+        logger.LogInformation("Deleting user with UserName:{UserName}", user.UserName);
         user.SoftDelete();
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("User with UserName:{UserName} successfully deleted", user.UserName);
+        await refreshTokenWriteRepository.RevokeAllByUserIdAsync(user.Id, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("User with UserName:{UserName} successfully deleted", user.UserName);
         return Result.Success("User successfully deleted");
     }
 }

@@ -1,4 +1,6 @@
-﻿using Application.Users.Commands.CreateUser;
+﻿using Application.Interfaces;
+using Application.Users.Commands.CreateUser;
+using Application.Users.DTOs;
 using Application.Users.Mapper;
 using Domain.Constants;
 using Domain.Entities;
@@ -6,36 +8,41 @@ using Domain.Interfaces;
 using Domain.ValueObjects.UserValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using QueueHub.Application.Common;
 using Shared;
 
 namespace Application.Users.Commands.CreateCitizen;
 
-public class CreateCitizenCommandHandler(IUserRepository userRepository,
+public class CreateCitizenCommandHandler(IUserWriteRepository userWriteRepository,
+    IUserReadRepository userReadRepository,
+    IPasswordHasher passwordHasher,
+    IOptions<JwtSetting> jwtOptions,
+    IJwtService jwtService,
+    IRefreshTokenWriteRepository refreshTokenWriteRepository,
     IUnitOfWork unitOfWork,
     IRoleRepository roleRepository,
     ILogger<CreateCitizenCommandHandler> logger)
-    :IRequestHandler<CreateCitizenCommand,Result<Guid>>
+    :IRequestHandler<CreateCitizenCommand,Result<AuthResult>>
 {
-    private readonly IUserRepository _userRepository = userRepository;
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly IRoleRepository _roleRepository = roleRepository;
-    private readonly ILogger<CreateCitizenCommandHandler> _logger= logger;
-    public async Task<Result<Guid>> Handle(CreateCitizenCommand request, CancellationToken cancellationToken)
+    private readonly JwtSetting _jwtSettings= jwtOptions.Value;
+    public async Task<Result<AuthResult>> Handle(CreateCitizenCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating citizen user with username {UserName}", request.UserName);
+        logger.LogInformation("Creating citizen user with username {UserName}", request.UserName);
         
-        var isDuplicate = await _userRepository.ExistsByUserNameAsync
+        var isDuplicate = await userReadRepository.ExistsByUserNameAsync
             (request.UserName
             , cancellationToken);
+        
         if (isDuplicate)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "Citizen creation failed. Username {UserName} already exists",
                 request.UserName);
-            return Result<Guid>.Failed("این نام کاربری از قبل وجود دارد.");
+            return Result<AuthResult>.Failed("این نام کاربری از قبل وجود دارد.");
         }
         
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        var passwordHash = passwordHasher.Hash(request.Password);
         var user = User.RegisterCitizen(
             new FirstName(request.FirstName),
             new Lastname(request.LastName),
@@ -47,17 +54,33 @@ public class CreateCitizenCommandHandler(IUserRepository userRepository,
                 : new Email(request.Email)
             );
         
-        var staffRole = await _roleRepository
+        var Role = await roleRepository
             .GetByNameAsync(
                 roleName:RoleNames.Citizen,
                 cancellationToken);
         
-        user.AssignRole(staffRole);
-        await _userRepository.AddAsync(user, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation(
+        user.AssignRole(Role);
+        await userWriteRepository.AddAsync(user, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        logger.LogInformation(
             "Citizen user created successfully. UserId: {UserId}",
             user.Id);
-        return Result<Guid>.Success("",user.Id);
+        var accessToken = jwtService.GenerateAccessToken(user);
+        var refreshTokenValue = jwtService.GenerateRefreshToken();
+
+        var refreshToken = new RefreshToken(
+            refreshTokenValue,
+            user.Id,
+            DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays));
+
+        await refreshTokenWriteRepository.AddAsync(refreshToken, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+        var authResult = new AuthResult()
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshTokenValue
+        };
+        return Result<AuthResult>.Success("",authResult);
     }
 }

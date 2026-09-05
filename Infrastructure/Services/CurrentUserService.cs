@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Infrastructure.Services;
 
@@ -26,7 +26,7 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
             var value = httpContextAccessor
                 .HttpContext?
                 .User
-                .FindFirst("UserId")
+                .FindFirst(JwtRegisteredClaimNames.Sub)
                 ?.Value;
 
             return Guid.Parse(value!);

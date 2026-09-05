@@ -1,11 +1,8 @@
-using Application.Auth;
 using Application.Users.Commands.CreateUser;
 using Domain.Interfaces;
 using Infrastructure;
 using Infrastructure.Persistence.SqlServer;
 using Microsoft.EntityFrameworkCore;
-using QueueHub.Filters;
-using QueueHub.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -19,13 +16,14 @@ using MediatR;
 using Microsoft.OpenApi;
 using QueueHub;
 using QueueHub.Application;
+using QueueHub.Application.Common;
 using QueueHub.Application.Common.Behaviors;
 using QueueHub.ErrorHandling;
 using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
+Console.WriteLine("========== APPLICATION STARTED ==========");
 // Logging
 builder.Host.UseSerilog();
 
@@ -35,7 +33,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 // Authentication
-var secretKey = builder.Configuration["Jwt:SecretKey"];
+builder.Services.Configure<JwtSetting>(builder.Configuration.GetSection("Jwt"));
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
 
 //Exception Handling
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -47,7 +47,7 @@ builder.Services.AddSwaggerWithJwt();
 
 // Build
 var app = builder.Build();
-
+Console.WriteLine("========== APP BUILT ==========");
 
 // Middleware Pipeline
 if (app.Environment.IsDevelopment())
@@ -69,5 +69,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+Console.WriteLine("========== APP RUNNING ==========");
 
 app.Run();

@@ -1,5 +1,4 @@
-﻿using Application.Auth.DTOs;
-using Application.Users.Commands.CreateUser;
+﻿using Application.Users.Commands.CreateUser;
 using Application.Users.Commands.DeleteMyAccount;
 using Application.Users.Commands.DeleteRole;
 using Application.Users.Commands.DeleteUser;
@@ -12,7 +11,6 @@ using Application.Users.Queries.GetUserById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using QueueHub.Filters;
 
 namespace QueueHub.Controllers;
 

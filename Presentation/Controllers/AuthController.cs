@@ -1,15 +1,14 @@
-﻿using Application.Auth;
-using Application.Auth.DTOs;
-using Application.Users.Commands.CreateEmployeeCommand;
+﻿using Application.Users.Commands.CreateEmployeeCommand;
 using Application.Users.Commands.CreateUser;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using QueueHub.Application.Users.Commands.Login;
 
 namespace QueueHub.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IMediator mediator,IAuthService authService):ControllerBase
+public class AuthController(IMediator mediator):ControllerBase
 {
     [HttpPost("RegisterCitizen")]
     public async Task<IActionResult> RegisterCitizen([FromBody] CreateCitizenCommand Command, CancellationToken cancellationToken)
@@ -30,9 +29,9 @@ public class AuthController(IMediator mediator,IAuthService authService):Control
     }
     
     [HttpPost("Login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Login([FromBody] LoginCommand command, CancellationToken cancellationToken)
     {
-        var result = await authService.Login(dto, cancellationToken);
+        var result = await mediator.Send(command, cancellationToken);
         if (!result.IsSuccess)
             return BadRequest(result);
         return Ok(result);

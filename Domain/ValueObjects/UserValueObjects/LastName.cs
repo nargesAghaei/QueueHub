@@ -2,7 +2,7 @@
 
 namespace Domain.ValueObjects.UserValueObjects;
 
-public record Lastname(string Value):BaseRecordValueObject
+public record Lastname(string Value) : BaseRecordValueObject(Value)
 {
     protected override void Validate()
     {

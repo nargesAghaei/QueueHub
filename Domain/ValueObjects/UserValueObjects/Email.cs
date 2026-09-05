@@ -3,7 +3,7 @@ using Domain.Exceptions;
 
 namespace Domain.ValueObjects.UserValueObjects;
 
-public record Email(string Value):BaseRecordValueObject
+public record Email(string Value) : BaseRecordValueObject(Value)
 {
     private static readonly Regex Pattern =
         new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
