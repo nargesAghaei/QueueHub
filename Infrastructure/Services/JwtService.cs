@@ -23,7 +23,7 @@ public class JwtService(IConfiguration configuration,IOptions<JwtSetting> jwtOpt
     {
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Role, user.ActiveRole.Name),
             new(ClaimTypes.Name, user.FirstName)
         };

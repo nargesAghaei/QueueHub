@@ -26,7 +26,7 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
             var value = httpContextAccessor
                 .HttpContext?
                 .User
-                .FindFirst(JwtRegisteredClaimNames.Sub)
+                .FindFirst(ClaimTypes.NameIdentifier)
                 ?.Value;
 
             return Guid.Parse(value!);

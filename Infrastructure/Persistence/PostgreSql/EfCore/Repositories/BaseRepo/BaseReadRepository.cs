@@ -1,8 +1,7 @@
 ﻿using Domain.Interfaces;
-using Infrastructure.Persistence.PostgreSql.EfCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure;
+namespace Infrastructure.Persistence.PostgreSql.EfCore.Repositories.BaseRepo;
 
 public abstract class BaseReadRepository<T, TId>(QueueHubDbContext dbContext)
     :IReadRepository<T, TId>

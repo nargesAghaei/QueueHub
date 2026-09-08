@@ -12,7 +12,7 @@ public class GetAllUsersQueryHandler(IUserReadRepository userReadRepository)
     public async Task<Result<List<UserListDto>>> Handle(GetAllUsersQuery request,
         CancellationToken cancellationToken)
     {
-        var list = await userReadRepository.GetAllAsync(cancellationToken);
+        var list = await userReadRepository.GetAllUserAsync(request.IsDeleted,request.RoleId,cancellationToken);
         if (list is null)
             return Result<List<UserListDto>>.Failed("لیست کاربران یافت نشد.");
         return Result<List<UserListDto>>.Success("", list.ToUserListDto());

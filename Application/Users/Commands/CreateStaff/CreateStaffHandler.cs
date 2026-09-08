@@ -60,7 +60,7 @@ public class CreateStaffHandler(IUserWriteRepository userWriteRepository,
             new Lastname(request.LastName),
             new UserName(request.UserName),
             new PasswordHash(passwordHash),
-            new PhoneNumber(request.PhoneNumber),
+            new Mobile(request.PhoneNumber),
             organizationId:currentUserService.OrganizationId,
             createdByManagerId:currentUserService.Id,
             request.Email is null 

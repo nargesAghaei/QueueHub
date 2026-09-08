@@ -43,12 +43,12 @@ public class CreateCitizenCommandHandler(IUserWriteRepository userWriteRepositor
         }
         
         var passwordHash = passwordHasher.Hash(request.Password);
-        var user = User.RegisterCitizen(
+        var user = User.RegisterUser(
             new FirstName(request.FirstName),
             new Lastname(request.LastName),
             new UserName(request.UserName),
             new PasswordHash(passwordHash),
-            new PhoneNumber(request.PhoneNumber),
+            new Mobile(request.PhoneNumber),
             request.Email is null 
                 ? null 
                 : new Email(request.Email)

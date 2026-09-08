@@ -2,7 +2,7 @@
 
 namespace Domain.ValueObjects.UserValueObjects;
 
-public record PhoneNumber(string Value) : BaseRecordValueObject(Value)
+public record Mobile(string Value) : BaseRecordValueObject(Value)
 {
     protected override void Validate()
     {
@@ -19,8 +19,8 @@ public record PhoneNumber(string Value) : BaseRecordValueObject(Value)
             throw new DomainException("شماره تلفن باید از صفر شروع شود.");
     }
     
-    public static implicit operator string(PhoneNumber phoneNumber)
+    public static implicit operator string(Mobile mobile)
     { 
-        return phoneNumber.Value;
+        return mobile.Value;
     }
 }

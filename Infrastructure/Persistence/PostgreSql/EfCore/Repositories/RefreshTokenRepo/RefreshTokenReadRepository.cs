@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Persistence.PostgreSql.EfCore;
+using Infrastructure.Persistence.PostgreSql.EfCore.Repositories.BaseRepo;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure;

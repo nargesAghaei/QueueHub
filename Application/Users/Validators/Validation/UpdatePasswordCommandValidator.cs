@@ -1,5 +1,8 @@
 ﻿using Application.Users.Commands.UpdatePassword;
+using Application.Users.Validators.Messages;
 using FluentValidation;
+
+namespace Application.Users.Validators.Validation;
 
 public class UpdatePasswordCommandValidator 
     : AbstractValidator<UpdatePasswordCommand>
@@ -8,15 +11,15 @@ public class UpdatePasswordCommandValidator
     {
         RuleFor(x => x.Password)
             .NotEmpty()
-            .WithMessage("رمز عبور الزامی است.")
+            .WithMessage(UserValidationMessages.PasswordRequired)
             .MinimumLength(8)
-            .WithMessage("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+            .WithMessage(UserValidationMessages.PasswordMinLength);
 
 
         RuleFor(x => x.RePassword)
             .NotEmpty()
-            .WithMessage("تکرار رمز عبور الزامی است.")
+            .WithMessage(UserValidationMessages.RePasswordRequired)
             .Equal(x => x.Password)
-            .WithMessage("رمز عبور و تکرار آن یکسان نیست.");
+            .WithMessage(UserValidationMessages.PasswordsNotSame);
     }
 }

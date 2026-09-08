@@ -253,7 +253,8 @@ namespace Infrastructure.persistence.PostgreSql.EfCore.Migrations
                 {
                     b.HasOne("Domain.Entities.Role", "ActiveRole")
                         .WithMany()
-                        .HasForeignKey("ActiveRoleId");
+                        .HasForeignKey("ActiveRoleId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.OwnsOne("Domain.ValueObjects.UserValueObjects.Email", "Email", b1 =>
                         {

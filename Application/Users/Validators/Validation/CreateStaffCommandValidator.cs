@@ -1,6 +1,9 @@
 ﻿using Application.Users.Commands.CreateEmployeeCommand;
+using Application.Users.Validators.Messages;
 using Domain.Constants;
 using FluentValidation;
+
+namespace Application.Users.Validators.Validation;
 
 public class CreateStaffCommandValidator 
     : AbstractValidator<CreateStaffCommand>
@@ -10,51 +13,51 @@ public class CreateStaffCommandValidator
         RuleFor(x => x.FirstName)
             .NotEmpty()
             .NotNull()
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.FirstNameRequired)
             .MinimumLength(UserConstants.MinNameLength)
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.FirstNameMinLength)
             .MaximumLength(UserConstants.MaxFirstNameLength)
-            .WithMessage("");
+            .WithMessage(UserValidationMessages.FirstNameMaxLength);
 
         
         RuleFor(x => x.LastName)
             .MaximumLength(UserConstants.MaxLastNameLength)
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.LastNameMaxLength)
             .MinimumLength(UserConstants.MinLastNameLength)
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.LastNameMinLength)
             .NotEmpty()
             .NotNull()
-            .WithMessage("");
+            .WithMessage(UserValidationMessages.LastNameRequired);
 
         
         RuleFor(x => x.PhoneNumber)
             .NotEmpty()
-            .WithMessage("شماره موبایل الزامی است.")
+            .WithMessage(UserValidationMessages.PhoneNumberRequired)
             .Matches(@"^09\d{9}$")
-            .WithMessage("شماره موبایل معتبر نیست.");
+            .WithMessage(UserValidationMessages.PhoneNumberInvalid);
 
         
         RuleFor(x => x.UserName)
             .NotEmpty()
-            .WithMessage("نام کاربری الزامی است.")
+            .WithMessage(UserValidationMessages.UserNameRequired)
             .MinimumLength(UserConstants.MinUserNameLength)
-            .WithMessage("نام کاربری باید حداقل ۴ کاراکتر باشد.")
+            .WithMessage(UserValidationMessages.UserNameMinLength)
             .MaximumLength(UserConstants.MaxUserNameLength)
-            .WithMessage("نام کاربری نمی‌تواند بیشتر از ۳۰ کاراکتر باشد.")
+            .WithMessage(UserValidationMessages.UserNameMaxLength)
             .Matches(@"^[a-zA-Z0-9_]+$")
-            .WithMessage("نام کاربری فقط می‌تواند شامل حروف، عدد و _ باشد.");
+            .WithMessage(UserValidationMessages.UserNameNotValid);
         
         
         RuleFor(x => x.Password)
             .NotEmpty()
-            .WithMessage("رمز عبور الزامی است.")
+            .WithMessage(UserValidationMessages.PasswordRequired)
             .MinimumLength(UserConstants.MinPasswordLength)
-            .WithMessage("رمز عبور باید حداقل ۸ کاراکتر باشد.");
+            .WithMessage(UserValidationMessages.PasswordMinLength);
         
         
         RuleFor(x => x.Email)
             .EmailAddress()
             .When(x => !string.IsNullOrWhiteSpace(x.Email))
-            .WithMessage("ایمیل وارد شده معتبر نیست.");
+            .WithMessage(UserValidationMessages.EmailNotValid);
     }
 }

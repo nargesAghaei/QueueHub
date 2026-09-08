@@ -23,7 +23,7 @@ using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
-Console.WriteLine("========== APPLICATION STARTED ==========");
+
 // Logging
 builder.Host.UseSerilog();
 
@@ -47,7 +47,6 @@ builder.Services.AddSwaggerWithJwt();
 
 // Build
 var app = builder.Build();
-Console.WriteLine("========== APP BUILT ==========");
 
 // Middleware Pipeline
 if (app.Environment.IsDevelopment())
@@ -69,6 +68,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-Console.WriteLine("========== APP RUNNING ==========");
 
 app.Run();

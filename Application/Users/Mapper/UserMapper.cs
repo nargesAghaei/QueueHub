@@ -16,8 +16,9 @@ public static class UserMapper
             FirstName = user.FirstName,
             LastName = user.LastName,
             UserName = user.UserName,
+            IsDeleted =  user.IsDeleted,
             Email = user.Email?.Value,
-            PhoneNumber = user.PhoneNumber,
+            Mobile = user.Mobile,
             LastLoginAt = user.LastLoginAt,
         };
     }
@@ -36,7 +37,8 @@ public static class UserMapper
             LastName = user.LastName,
             UserName = user.UserName,
             Email = user.Email?.Value,
-            PhoneNumber = user.PhoneNumber,
+            IsDeleted = user.IsDeleted,
+            Mobile = user.Mobile,
             ProfileImageUrl = user.ProfileImageUrl,
             LastLoginAt = user.LastLoginAt,
             CreatedAt = user.CreatedAt,

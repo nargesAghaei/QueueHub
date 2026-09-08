@@ -11,6 +11,11 @@ public class UserConfiguration:IEntityTypeConfiguration<User>
     {
         builder.HasKey(x => x.Id);
         
+        builder.HasOne(u => u.ActiveRole)
+            .WithMany()
+            .HasForeignKey(u => u.ActiveRoleId)
+            .OnDelete(DeleteBehavior.NoAction);
+        
         builder.HasMany(x => x.UserRoles)
             .WithOne(x => x.User)
             .HasForeignKey(x => x.UserId);
@@ -41,10 +46,10 @@ public class UserConfiguration:IEntityTypeConfiguration<User>
             b.HasIndex(x => x.Value).IsUnique();
         });
         
-        builder.OwnsOne(x => x.PhoneNumber, b =>
+        builder.OwnsOne(x => x.Mobile, b =>
         {
             b.Property(x => x.Value)
-                .HasColumnName("PhoneNumber")
+                .HasColumnName("Mobile")
                 .HasMaxLength(UserConstants.PhoneNumberLength)
                 .IsRequired();
             

@@ -1,84 +1,119 @@
 ﻿using Domain.Exceptions;
+using Domain.Interfaces;
+using Domain.ValueObjects.OrganizationValueObjects;
+using Domain.ValueObjects.UserValueObjects;
 
 namespace Domain.Entities;
 
-public class Organization : BaseEntity<Guid>
+public class Organization : BaseEntity<Guid>,ISoftDeletable
 {
-    public string Name { get; private set; } = null!;
-    public string? Description { get; private set; }
-    public string? Address { get; private set; }
-    public Guid ManagerId { get; private set; }
+    public Name Name { get; private set; } = null!;
+    public string OrganizationCode { get; private set; } = null!;
+    public Description Description { get; private set; } = null!;
+    public PhoneNumber PhoneNumber { get; private set; } = null!;
+    public Email Email { get; private set; } = null!;
+    public string? Website { get; private set; }
+    public Address? Address { get; private set; }
+    public string? City { get; private set; }
+    public string? LogoUrl { get; private set; }
     public bool IsActive { get; private set; }
+    public bool IsDeleted { get; private set; }
+    
 
-    // private readonly List<Service> _services = new();
-    // public IReadOnlyCollection<Service> Services => _services.AsReadOnly();
+    public Guid OrganizationCategoryId { get; private set; }
+    public OrganizationCategory OrganizationCategory { get; private set; } = null!;
+    public User Manager { get; private set; } = null!;
+    private readonly List<Branch> _branches = new();
+    public IReadOnlyCollection<Branch> Branches => _branches.AsReadOnly();
+    private readonly List<Service> _services = new();
+    public IReadOnlyCollection<Service> Services => _services.AsReadOnly();
+    
+    private Organization(){ }
 
-    private Organization() { } // EF Core
-
-    public static Organization Create(string name, Guid managerId, string? description = null, string? address = null)
+    public static Organization Create(
+        Name name,
+        string organizationCode,
+        Description description,
+        PhoneNumber phoneNumber,
+        Email email,
+        Guid createdBy,
+        string? website,
+        Address? address,
+        string? city,
+        string? logoUrl,
+        Guid categoryId)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Organization name is required.");
-
-        if (managerId == Guid.Empty)
-            throw new DomainException("Organization must have a manager.");
-
-        return new Organization
+        return new Organization()
         {
             Id = Guid.NewGuid(),
-            Name = name.Trim(),
+            Name = name,
+            OrganizationCode = organizationCode,
             Description = description,
+            PhoneNumber = phoneNumber,
+            Email = email,
+            Website = website,
             Address = address,
-            ManagerId = managerId,
+            City = city,
+            LogoUrl = logoUrl,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            IsDeleted = false,
+            CreatedBy = createdBy
         };
+
     }
-
-    public void UpdateDetails(string name, string? description, string? address)
+    
+    
+    public void Update(
+        Name name,
+        string organizationCode,
+        Description description,
+        PhoneNumber phoneNumber,
+        Email email,
+        Guid updatedBy,
+        string? website,
+        Address? address,
+        string? city,
+        string? logoUrl)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new DomainException("Organization name is required.");
-
-        Name = name.Trim();
+        Name = name;
+        OrganizationCode= organizationCode;
         Description = description;
+        PhoneNumber = phoneNumber;
+        Email = email;
+        Website = website;
         Address = address;
+        City= city;
+        LogoUrl = logoUrl;
+        UpdatedBy = updatedBy;
         UpdatedAt = DateTime.UtcNow;
     }
-
-    public void Deactivate()
+    
+    public void SoftDelete(Guid updatedBy)
     {
-        if (!IsActive)
-            throw new DomainException("Organization is already inactive.");
-
-        IsActive = false;
+        IsDeleted = true;
         UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
     }
 
-    public void Activate()
+    public void Activate(Guid updatedBy)
     {
         IsActive = true;
         UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
     }
-
-    // Services belong to the Organization - managed through it (Aggregate rule)
-    // public Service AddService(string serviceName, string? description = null)
-    // {
-    //     if (_services.Any(s => s.Name.Equals(serviceName, StringComparison.OrdinalIgnoreCase)))
-    //         throw new DomainException("A service with this name already exists in this organization.");
-    //
-    //     var service = Service.Create(serviceName, Id, description);
-    //     _services.Add(service);
-    //     return service;
-    // }
-    //
-    // public void RemoveService(Guid serviceId)
-    // {
-    //     var service = _services.FirstOrDefault(s => s.Id == serviceId);
-    //
-    //     if (service is null)
-    //         throw new DomainException("Service not found in this organization.");
-    //
-    //     _services.Remove(service);
-    // }
+    
+    public void Deactivate(Guid updatedBy)
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
+    }
+    
+    public void Restore(Guid updatedBy)
+    {
+        IsDeleted = false;
+        UpdatedAt = DateTime.UtcNow;
+        UpdatedBy = updatedBy;
+    }
 }

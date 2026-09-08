@@ -33,7 +33,7 @@ public class UpdateUserProfileCommandHandler(IUserWriteRepository userWriteRepos
         user.UpdateProfile(
             new FirstName(request.FirstName),
             new Lastname(request.LastName),
-            new PhoneNumber(request.PhoneNumber),
+            new Mobile(request.PhoneNumber),
             new Email(request.Email),
             request.ProfileImageUrl);
 

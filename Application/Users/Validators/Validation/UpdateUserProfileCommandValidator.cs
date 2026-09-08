@@ -1,5 +1,6 @@
 ﻿using Application.Users.Commands.CreateUser;
 using Application.Users.Commands.UpdateUserProfile;
+using Application.Users.Validators.Messages;
 using Domain.Constants;
 using FluentValidation;
 
@@ -12,33 +13,33 @@ public class UpdateUserProfileCommandValidator:AbstractValidator<UpdateUserProfi
         RuleFor(x => x.FirstName)
             .NotEmpty()
             .NotNull()
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.FirstNameRequired)
             .MinimumLength(UserConstants.MinNameLength)
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.FirstNameMinLength)
             .MaximumLength(UserConstants.MaxFirstNameLength)
-            .WithMessage("");
+            .WithMessage(UserValidationMessages.FirstNameMaxLength);
 
         
         RuleFor(x => x.LastName)
             .MaximumLength(UserConstants.MaxLastNameLength)
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.LastNameMaxLength)
             .MinimumLength(UserConstants.MinLastNameLength)
-            .WithMessage("")
+            .WithMessage(UserValidationMessages.LastNameMinLength)
             .NotEmpty()
             .NotNull()
-            .WithMessage("");
+            .WithMessage(UserValidationMessages.LastNameRequired);
 
         
         RuleFor(x => x.PhoneNumber)
             .NotEmpty()
-            .WithMessage("شماره موبایل الزامی است.")
+            .WithMessage(UserValidationMessages.PhoneNumberRequired)
             .Matches(@"^09\d{9}$")
-            .WithMessage("شماره موبایل معتبر نیست.");
+            .WithMessage(UserValidationMessages.PhoneNumberInvalid);
 
         
         RuleFor(x => x.Email)
             .EmailAddress()
             .When(x => !string.IsNullOrWhiteSpace(x.Email))
-            .WithMessage("ایمیل وارد شده معتبر نیست.");
+            .WithMessage(UserValidationMessages.EmailNotValid);
     }
 }
